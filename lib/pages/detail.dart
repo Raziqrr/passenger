@@ -1,10 +1,11 @@
 /// @Author: Raziqrr rzqrdzn03@gmail.com
 /// @Date: 2024-08-03 17:16:40
 /// @LastEditors: Raziqrr rzqrdzn03@gmail.com
-/// @LastEditTime: 2024-08-04 19:15:13
+/// @LastEditTime: 2024-08-04 19:18:54
 /// @FilePath: lib/pages/detail.dart
 /// @Description: 这是默认设置,可以在设置》工具》File Description中进行配置
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class DetailPage extends StatelessWidget {
@@ -20,6 +21,17 @@ class DetailPage extends StatelessWidget {
   final String rideId;
   final bool myRide;
   final String myId;
+
+  void JoinRide(BuildContext context) {
+    final db = FirebaseFirestore.instance;
+    final rideRef = db.collection("Rides").doc("${rideId}");
+    rideRef.update({
+      "passengers": FieldValue.arrayUnion([userData]),
+      "passengerIds": FieldValue.arrayUnion([myId]),
+      "passengerCount": FieldValue.increment(1)
+    }).then((value) => Navigator.pop(context),
+        onError: (e) => print("Error updating document $e"));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -288,7 +300,13 @@ class DetailPage extends StatelessWidget {
                     ],
                   ),
                 ),
-              )
+              ),
+              if (myRide == false)
+                ElevatedButton(
+                    onPressed: () {
+                      JoinRide(context);
+                    },
+                    child: Text("Join"))
             ],
           ),
         ),
